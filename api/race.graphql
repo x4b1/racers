@@ -1,0 +1,10 @@
+type Race {
+    id: ID!
+    name: String!
+    date: DateTime!
+    competitors: [User!]!
+}
+
+type Races {
+    races: [Race!]!
+}

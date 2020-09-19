@@ -1,0 +1,47 @@
+
+directive @logged on MUTATION | QUERY | FIELD
+
+type Query {
+  race(id: ID!): RaceResult!
+  races: Races!
+}
+
+union RaceResult = Race | InvalidIDError | RaceNotFound
+
+type Mutation {
+  createRace(race: RaceInput!): CreateRaceResult! @logged
+}
+
+input RaceInput {
+    id: ID!
+    name: String!
+    date: DateTime!
+}
+
+union CreateRaceResult = Race | InvalidIDError | InvalidRaceNameError | InvalidRaceDateError | RaceAlreadyExists
+
+scalar DateTime
+
+interface Error {
+    message: String!
+}
+
+type RaceNotFound implements Error {
+    message: String!
+}
+
+type InvalidIDError implements Error {
+    message: String!
+}
+
+type InvalidRaceNameError implements Error {
+    message: String!
+}
+
+type InvalidRaceDateError implements Error {
+    message: String!
+}
+
+type RaceAlreadyExists implements Error {
+    message: String!
+}

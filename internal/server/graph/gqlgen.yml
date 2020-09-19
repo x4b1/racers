@@ -1,0 +1,15 @@
+schema:
+  - ../../../api/*.graphql
+
+resolver:
+  layout: follow-schema
+  dir: .
+
+
+autobind:
+  - github.com/xabi93/racers/internal/server/graph
+
+models:
+  DateTime: # The GraphQL type DateTime
+    model:
+      - github.com/99designs/gqlgen/graphql.Time
