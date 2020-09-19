@@ -1,70 +1,21 @@
 # Domain
 
-![graph](wms_graph.png)
-
 ## Aggregates
 
-### Warehouses
+### Race
 
-The building were all the spaces and packages are.
+It is an event that will happen in a 
+The race that competitors will run.
 
-### Spaces
+### User
 
-Is the physical representation of where are going to place the packages.
+A person in the system
 
-### Groups
+### Team
 
-A set of rules to match packages
-
-### Packages
-
-The object to be delivered
-
-### Retailers
-
-Who sends the package. e.g.: El Corte Ingles or Amazon.
-
-### Routes
-
-The way that will follow a package to be delivered.
+A group of Users
 
 ## Relations
-
-### warehouse-spaces (one-many)
-
-A space cannot exists outside of a warehouse, but in a warehouse can be many spaces.
-
-Here the reference is hold by the space, as it is a strong relation.
-
-### space-packages (0-many)
-
-A spaces and a package can live without each other so the relation is weak.
-
-Both can hold the relation but makes more sense the space to have the all the packages.
-
-### space-groups (0-many)
-
-A spaces and a group can live without each other so the relation is weak.
-
-Both can hold the relation but makes more sense the group to have the all the spaces.
-
-### groups-packages (many-many)
-
-A group and a package can live without each other so the relation is weak.
-
-Both can hold the relation but makes more sense the group to have the all the packages.
-
-### route-packages (0-many)
-
-A route and a package can live without each other so the relation is weak. A route can be in multiple packages.
-
-Both can hold the relation but makes more sense the package to have the route.
-
-### retailer-packages (0-many)
-
-A retailer and a package can live without each other so the relation is weak. A retailer can be in multiple packages.
-
-Both can hold the relation but makes more sense the package to have the retailer.
 
 ## Domain events
 
