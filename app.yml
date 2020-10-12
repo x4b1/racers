@@ -1,0 +1,5 @@
+runtime: go114
+
+handlers:
+- url: /.*
+  script: auto

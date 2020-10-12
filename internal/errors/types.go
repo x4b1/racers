@@ -6,8 +6,16 @@ type internalError struct{ error }
 
 func (e internalError) Unwrap() error { return e.error }
 
-func WrapInternalError(err error, format string, args ...interface{}) error {
-	return &internalError{Wrap(err, format, args...)}
+func NewInternalError(format string, args ...interface{}) error {
+	return &internalError{New(format, args...)}
+}
+
+func WrapInternalError(err error) error {
+	if err != nil {
+		return &internalError{err}
+	}
+
+	return nil
 }
 
 func IsInternalError(err error) bool {
@@ -19,12 +27,25 @@ type notFoundError struct{ error }
 
 func (e notFoundError) Unwrap() error { return e.error }
 
-func WrapNotFoundError(err error, format string, args ...interface{}) error {
-	return &notFoundError{Wrap(err, format, args...)}
+func WrapNotFoundError(err error) error {
+	return &notFoundError{err}
 }
 
 func IsNotFoundError(err error) bool {
 	var target *notFoundError
+	return As(err, &target)
+}
+
+type wrongInputError struct{ error }
+
+func (e wrongInputError) Unwrap() error { return e.error }
+
+func WrapWrongInputError(err error) error {
+	return &wrongInputError{err}
+}
+
+func IsWrongInputError(err error) bool {
+	var target *wrongInputError
 	return As(err, &target)
 }
 

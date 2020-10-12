@@ -11,7 +11,7 @@ As we don't want to attach services to the different infrastructure implementati
 
 ## Requests
 
-The requests that gets the command must be DTOs of non domain values, like primitive values or Application/Service values. Then the command will be responsible to build the domain types.
+The requests that gets the command must be DTOs of non domain values, like primitive values or Application/Service values. Then the command will be responsible to build the domain id.
 
 ## Repositories
 

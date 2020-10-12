@@ -1,0 +1,39 @@
+version: '3'
+
+networks:
+  racers-network:
+    driver: bridge
+
+services:
+  racers-api:
+    build:
+      context: .
+      dockerfile: ./docker/run/dockerfile
+    networks:
+      - racers-network
+    ports:
+      - "3000:8080"
+    depends_on:
+      - db
+    environment:
+      PORT: "8080"
+      CGO_ENABLED: 0
+      DATABASE_NAME: "racers"
+      DATABASE_USER: "racers"
+      DATABASE_PASS: "racers"
+      DATABASE_HOST: "database"
+      DATABASE_PORT: "5432"
+  db:
+    image: postgres:13-alpine
+    container_name: racers_db
+    networks:
+      racers-network:
+        aliases:
+          - database
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: racers
+      POSTGRES_PASSWORD: racers
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: racers

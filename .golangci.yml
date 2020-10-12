@@ -1,7 +1,5 @@
 # copies from https://github.com/istio/common-files/blob/master/files/common/config/.golangci.yml
 run:
-  build-tags:
-    - infra
   # timeout for analysis, e.g. 30s, 5m, default is 1m
   deadline: 5m
 

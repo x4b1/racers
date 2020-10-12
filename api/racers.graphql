@@ -1,0 +1,52 @@
+type Query {
+  race(id: ID!): RaceResult!
+}
+
+union RaceResult = Race | RaceByIDNotFound
+
+type Mutation {
+  createRace(race: RaceInput!): CreateRaceResult!
+}
+
+scalar DateTime
+
+input RaceInput {
+    name: String!
+    date: DateTime!
+}
+
+union CreateRaceResult = Race | InvalidNameError | InvalidDateError
+
+type Race {
+    id: ID!
+    name: String!
+    date: DateTime!
+    competitors: [User!]!
+}
+
+type User {
+    id: ID!
+    name: String!
+    races: [Race!]!
+}
+
+interface Error {
+    code: String!
+    message: String!
+}
+
+type RaceByIDNotFound implements Error {
+    code: String!
+    message: String!
+    id: ID!
+}
+
+type InvalidNameError implements Error{
+    code: String!
+    message: String!
+}
+
+type InvalidDateError implements Error{
+    code: String!
+    message: String!
+}
