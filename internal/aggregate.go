@@ -3,7 +3,7 @@ package racers
 import (
 	"time"
 
-	"github.com/xabi93/racers/internal/common/id"
+	"github.com/xabi93/racers/internal/id"
 )
 
 type Event interface {

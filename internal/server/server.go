@@ -1,82 +1,63 @@
 package server
 
-import (
-	"context"
-	"database/sql"
-	"fmt"
-	"net"
-	"net/http"
+// const GraphEndpoint = "/graph"
 
-	"github.com/xabi93/racers/internal/api/graph"
-	"github.com/xabi93/racers/internal/config"
-	"github.com/xabi93/racers/internal/log"
-	"github.com/xabi93/racers/internal/service"
-	"github.com/xabi93/racers/internal/storage/postgres/ent"
-	"github.com/xabi93/racers/internal/storage/postgres/gorm"
+// func New(conf config.Conf, logger log.Logger, db *sql.DB) (Server, error) {
+// 	s := Server{conf: conf, logger: logger, db: db}
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/gorilla/mux"
-)
+// 	if err := s.initService(); err != nil {
+// 		return Server{}, err
+// 	}
 
-const GraphEndpoint = "/graph"
+// 	s.initHandler()
 
-func New(conf config.Conf, logger log.Logger, db *sql.DB) (Server, error) {
-	s := Server{conf: conf, logger: logger, db: db}
+// 	return s, nil
+// }
 
-	if err := s.initService(); err != nil {
-		return Server{}, err
-	}
+// type Server struct {
+// 	conf   config.Conf
+// 	logger log.Logger
+// 	db     *sql.DB
 
-	s.initHandler()
+// 	handler http.Handler
 
-	return s, nil
-}
+// 	service *service.Service
+// }
 
-type Server struct {
-	conf   config.Conf
-	logger log.Logger
-	db     *sql.DB
+// func (s *Server) initService() error {
+// 	db, err := gorm.New(s.db)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	handler http.Handler
+// 	eventsRepo := gorm.NewEvents(db)
+// 	racesRepo := gorm.NewRaces(db, eventsRepo)
 
-	service *service.Service
-}
+// 	s.service = service.NewService(
+// 		service.NewRacesMetrics(service.NewRacesService(racesRepo, nil)),
+// 		nil,
+// 	)
 
-func (s *Server) initService() error {
-	db, err := gorm.New(s.db)
-	if err != nil {
-		return err
-	}
+// 	return nil
+// }
 
-	eventsRepo := gorm.NewEvents(db)
-	racesRepo := gorm.NewRaces(db, eventsRepo)
+// func (s *Server) initHandler() {
+// 	r := mux.NewRouter()
 
-	s.service = service.NewService(
-		service.NewRacesMetrics(service.NewRacesService(racesRepo, nil)),
-		nil,
-	)
+// 	r.Handle("/playground", playground.Handler("racers", GraphEndpoint))
+// 	r.Handle(GraphEndpoint, handler.NewDefaultServer(graph.NewExecutableSchema(graph.New(s.service, ent.New(s.conf.Postgres, s.logger, s.db)))))
 
-	return nil
-}
+// 	s.handler = r
+// }
 
-func (s *Server) initHandler() {
-	r := mux.NewRouter()
+// func (s *Server) Handler() http.Handler {
+// 	return s.handler
+// }
 
-	r.Handle("/playground", playground.Handler("racers", GraphEndpoint))
-	r.Handle(GraphEndpoint, handler.NewDefaultServer(graph.NewExecutableSchema(graph.New(s.service, ent.New(s.conf.Postgres, s.logger, s.db)))))
+// func (s *Server) Serve() error {
+// 	addr := net.JoinHostPort("", s.conf.Port)
 
-	s.handler = r
-}
+// 	s.logger.Info(context.Background(), fmt.Sprintf("Server running on: %s", addr), nil)
 
-func (s *Server) Handler() http.Handler {
-	return s.handler
-}
-
-func (s *Server) Serve() error {
-	addr := net.JoinHostPort("", s.conf.Port)
-
-	s.logger.Info(context.Background(), fmt.Sprintf("Server running on: %s", addr), nil)
-
-	return http.ListenAndServe(addr, s.handler)
-}
+// 	return http.ListenAndServe(addr, s.handler)
+// }

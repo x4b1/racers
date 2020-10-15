@@ -7,13 +7,13 @@ import (
 type Fields map[string]interface{}
 
 type Logger interface {
-	Debug(ctx context.Context, msg string, fields Fields)
-	Error(ctx context.Context, err error, fields Fields)
-	Info(ctx context.Context, msg string, fields Fields)
+	Debug(ctx context.Context, msg string, args ...interface{})
+	Error(ctx context.Context, err error, args ...interface{})
+	Info(ctx context.Context, args ...interface{})
 }
 
 type Noop struct{}
 
-func (Noop) Debug(ctx context.Context, msg string, fields Fields) {}
-func (Noop) Error(ctx context.Context, err error, fields Fields)  {}
-func (Noop) Info(ctx context.Context, msg string, fields Fields)  {}
+func (Noop) Debug(ctx context.Context, msg string, args ...interface{}) {}
+func (Noop) Error(ctx context.Context, err error, args ...interface{})  {}
+func (Noop) Info(ctx context.Context, args ...interface{})              {}

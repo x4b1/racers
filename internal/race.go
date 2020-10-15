@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/xabi93/racers/internal/common/id"
+	"github.com/xabi93/racers/internal/id"
 	baseid "github.com/xabi93/racers/internal/id"
 )
 

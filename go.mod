@@ -13,6 +13,7 @@ require (
 	github.com/containerd/continuity v0.0.0-20200928162600-f2cc35102c2a // indirect
 	github.com/facebook/ent v0.4.4-0.20201006132909-48362e79cdd9
 	github.com/facebookincubator/ent-contrib v0.0.0-20201006141524-9617dddb71dc
+	github.com/go-kit/kit v0.8.0
 	github.com/golang-migrate/migrate/v4 v4.13.0
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.7.4
@@ -22,6 +23,7 @@ require (
 	github.com/lib/pq v1.8.0
 	github.com/matryer/is v1.4.0
 	github.com/ory/dockertest/v3 v3.6.0
+	github.com/prometheus/client_golang v0.9.3
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/vektah/gqlparser/v2 v2.1.0

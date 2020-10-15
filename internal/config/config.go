@@ -5,13 +5,13 @@ import (
 	"github.com/xabi93/racers/internal/storage/postgres"
 )
 
+type Env string
+
 const (
 	Local Env = "local"
 	Test  Env = "test"
 	Prod  Env = "production"
 )
-
-type Env string
 
 type Conf struct {
 	Env      Env    `env:"ENVIRONMENT" envDefault:"local"`
