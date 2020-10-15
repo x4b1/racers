@@ -36,7 +36,7 @@ func (ls UsersService) Create(ctx context.Context, r CreateUser) error {
 	}
 
 	if err := ls.users.Save(ctx, racers.CreateUser(id, name)); err != nil {
-		return errors.WrapInternalError(err, "saving User")
+		return errors.WrapInternalError(err)
 	}
 
 	return nil

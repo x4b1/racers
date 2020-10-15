@@ -48,14 +48,14 @@ func (rs teamsService) Create(ctx context.Context, r CreateTeam) error {
 
 	admin, err := rs.users.ByID(ctx, adminID)
 	if err != nil {
-		return errors.WrapInternalError(err, "fetching admin")
+		return errors.WrapInternalError(err)
 	}
 	if admin == nil {
-		return errors.WrapNotFoundError(UserByIDNotFoundError{ID: adminID}, "fetching admin")
+		return errors.WrapNotFoundError(UserByIDNotFoundError{ID: adminID})
 	}
 
 	if err := rs.teams.Save(ctx, racers.CreateTeam(id, name, *admin)); err != nil {
-		return errors.WrapInternalError(err, "saving team")
+		return errors.WrapInternalError(err)
 	}
 
 	return nil
@@ -83,23 +83,23 @@ func (rs teamsService) Join(ctx context.Context, r JoinTeam) error {
 
 	team, err := rs.teams.ByID(ctx, teamID)
 	if err != nil {
-		return errors.WrapInternalError(err, "fetching team")
+		return errors.WrapInternalError(err)
 	}
 	if team == nil {
-		return errors.WrapNotFoundError(TeamByIDNotFoundError{ID: teamID}, "fetching team")
+		return errors.WrapNotFoundError(TeamByIDNotFoundError{ID: teamID})
 	}
 
 	user, err := rs.users.ByID(ctx, userID)
 	if err != nil {
-		return errors.WrapInternalError(err, "fetching user")
+		return errors.WrapInternalError(err)
 	}
 	if user == nil {
-		return errors.WrapNotFoundError(UserByIDNotFoundError{ID: userID}, "fetching user")
+		return errors.WrapNotFoundError(UserByIDNotFoundError{ID: userID})
 	}
 
 	userTeam, err := rs.teams.ByMember(ctx, userID)
 	if err != nil {
-		return errors.WrapInternalError(err, "fetching user team")
+		return errors.WrapInternalError(err)
 	}
 
 	if err := team.Join(racers.NewTeamMember(*user, userTeam)); err != nil {
@@ -107,7 +107,7 @@ func (rs teamsService) Join(ctx context.Context, r JoinTeam) error {
 	}
 
 	if err := rs.teams.Save(ctx, *team); err != nil {
-		return errors.WrapInternalError(err, "saving team")
+		return errors.WrapInternalError(err)
 	}
 
 	return nil

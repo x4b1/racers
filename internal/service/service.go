@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"log"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/go-kit/kit/metrics"
 	"github.com/xabi93/racers/internal/errors"
+	"github.com/xabi93/racers/internal/log"
 )
 
 type ActionName string
@@ -35,8 +35,8 @@ func NewInstrumenting(l log.Logger) Instrumenting {
 
 type Instrumenting struct {
 	logger    log.Logger
-	count     prometheus.Counter
-	histogram prometheus.Histogram
+	count     metrics.Counter
+	histogram metrics.Histogram
 }
 
 func (i Instrumenting) Log(ctx context.Context, action ActionName, req interface{}, h func() error) {
@@ -46,7 +46,7 @@ func (i Instrumenting) Log(ctx context.Context, action ActionName, req interface
 		elapsed := time.Since(begin)
 
 		i.count.With("action", action.String()).Add(1)
-		i.histogram.With("action", action.String()).Observe(elapsed)
+		i.histogram.With("action", action.String()).Observe(float64(elapsed))
 
 		fields := []interface{}{
 			"action", action,
