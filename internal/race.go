@@ -1,27 +1,11 @@
 package racers
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
+	"github.com/xabi93/racers/internal/errors"
 	"github.com/xabi93/racers/internal/id"
-	baseid "github.com/xabi93/racers/internal/id"
-)
-
-// Events
-type (
-	RaceCreated struct {
-		BaseEvent
-		RaceID   RaceID   `json:"id,omitempty"`
-		RaceName RaceName `json:"name,omitempty"`
-		RaceDate RaceDate `json:"date,omitempty"`
-	}
-	RaceCompetitorJoined struct {
-		BaseEvent
-		RaceID       RaceID `json:"race_id,omitempty"`
-		CompetitorID UserID `json:"competitor_id,omitempty"`
-	}
 )
 
 type (
@@ -36,7 +20,7 @@ func (err InvalidRaceIDError) Error() string {
 func NewRaceID(s string) (RaceID, error) {
 	id, err := id.NewID(s)
 	if err != nil {
-		return "", InvalidRaceIDError{err}
+		return RaceID{}, InvalidRaceIDError{err}
 	}
 
 	return RaceID(id), nil
@@ -91,16 +75,16 @@ type RaceOption func(*Race)
 
 func RaceCompetitorsOpt(c RaceCompetitors) RaceOption {
 	return func(r *Race) {
-		r.competitors = c
+		r.Competitors = c
 	}
 }
 
-func NewRace(id RaceID, name RaceName, date RaceDate, opts ...RaceOption) Race {
+func NewRace(id RaceID, name RaceName, date RaceDate, owner UserID, opts ...RaceOption) Race {
 	r := Race{
-		aggregate: newAggregate(),
-		id:        id,
-		name:      name,
-		date:      date,
+		ID:    id,
+		Name:  name,
+		Date:  date,
+		Owner: owner,
 	}
 	for _, opt := range opts {
 		opt(&r)
@@ -109,42 +93,12 @@ func NewRace(id RaceID, name RaceName, date RaceDate, opts ...RaceOption) Race {
 	return r
 }
 
-func CreateRace(id RaceID, name RaceName, date RaceDate) Race {
-	r := NewRace(id, name, date)
-
-	r.aggregate.record(RaceCreated{
-		NewBaseEvent(baseid.ID(r.id)),
-		r.id,
-		r.name,
-		r.date,
-	})
-
-	return r
-}
-
 type Race struct {
-	aggregate
-
-	id          RaceID
-	name        RaceName
-	date        RaceDate
-	competitors RaceCompetitors
-}
-
-func (r Race) ID() RaceID {
-	return r.id
-}
-
-func (r Race) Name() RaceName {
-	return r.name
-}
-
-func (r Race) Date() RaceDate {
-	return r.date
-}
-
-func (r Race) Competitors() RaceCompetitors {
-	return r.competitors
+	ID          RaceID
+	Name        RaceName
+	Date        RaceDate
+	Owner       UserID
+	Competitors RaceCompetitors
 }
 
 type CompetitorInRaceError struct {
@@ -157,21 +111,11 @@ func (err CompetitorInRaceError) Error() string {
 }
 
 func (r *Race) Join(u User) error {
-	if r.competitors.is(u.id) {
-		return CompetitorInRaceError{r.id, u.id}
+	if r.Competitors.is(u.ID) {
+		return CompetitorInRaceError{r.ID, u.ID}
 	}
 
-	r.competitors.add(u.id)
-
-	r.record(RaceCompetitorJoined{
-		NewBaseEvent(id.ID(r.id)),
-		r.id,
-		u.id,
-	})
+	r.Competitors.add(u.ID)
 
 	return nil
-}
-
-func (r *Race) ConsumeEvents() []Event {
-	return r.aggregate.ConsumeEvents()
 }

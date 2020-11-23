@@ -5,10 +5,9 @@ package service_test
 
 import (
 	"context"
-	"sync"
-
 	"github.com/xabi93/racers/internal"
 	"github.com/xabi93/racers/internal/service"
+	"sync"
 )
 
 // Ensure, that RacesRepositoryMock does implement service.RacesRepository.
@@ -21,8 +20,14 @@ var _ service.RacesRepository = &RacesRepositoryMock{}
 //
 //         // make and configure a mocked service.RacesRepository
 //         mockedRacesRepository := &RacesRepositoryMock{
-//             ByIDFunc: func(ctx context.Context, id racers.RaceID) (*racers.Race, error) {
-// 	               panic("mock out the ByID method")
+//             AllFunc: func(ctx context.Context) ([]racers.Race, error) {
+// 	               panic("mock out the All method")
+//             },
+//             ExistsFunc: func(ctx context.Context, race racers.Race) (bool, error) {
+// 	               panic("mock out the Exists method")
+//             },
+//             GetFunc: func(ctx context.Context, id racers.RaceID) (racers.Race, error) {
+// 	               panic("mock out the Get method")
 //             },
 //             SaveFunc: func(ctx context.Context, race racers.Race) error {
 // 	               panic("mock out the Save method")
@@ -34,16 +39,34 @@ var _ service.RacesRepository = &RacesRepositoryMock{}
 //
 //     }
 type RacesRepositoryMock struct {
-	// ByIDFunc mocks the ByID method.
-	ByIDFunc func(ctx context.Context, id racers.RaceID) (*racers.Race, error)
+	// AllFunc mocks the All method.
+	AllFunc func(ctx context.Context) ([]racers.Race, error)
+
+	// ExistsFunc mocks the Exists method.
+	ExistsFunc func(ctx context.Context, race racers.Race) (bool, error)
+
+	// GetFunc mocks the Get method.
+	GetFunc func(ctx context.Context, id racers.RaceID) (racers.Race, error)
 
 	// SaveFunc mocks the Save method.
 	SaveFunc func(ctx context.Context, race racers.Race) error
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// ByID holds details about calls to the ByID method.
-		ByID []struct {
+		// All holds details about calls to the All method.
+		All []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+		}
+		// Exists holds details about calls to the Exists method.
+		Exists []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Race is the race argument value.
+			Race racers.Race
+		}
+		// Get holds details about calls to the Get method.
+		Get []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// ID is the id argument value.
@@ -57,15 +80,88 @@ type RacesRepositoryMock struct {
 			Race racers.Race
 		}
 	}
-	lockByID sync.RWMutex
-	lockSave sync.RWMutex
+	lockAll    sync.RWMutex
+	lockExists sync.RWMutex
+	lockGet    sync.RWMutex
+	lockSave   sync.RWMutex
 }
 
-// ByID calls ByIDFunc.
-func (mock *RacesRepositoryMock) ByID(ctx context.Context, id racers.RaceID) (*racers.Race, error) {
-	if mock.ByIDFunc == nil {
-		panic("RacesRepositoryMock.ByIDFunc: method is nil but RacesRepository.ByID was just called")
+// All calls AllFunc.
+func (mock *RacesRepositoryMock) All(ctx context.Context) ([]racers.Race, error) {
+	callInfo := struct {
+		Ctx context.Context
+	}{
+		Ctx: ctx,
 	}
+	mock.lockAll.Lock()
+	mock.calls.All = append(mock.calls.All, callInfo)
+	mock.lockAll.Unlock()
+	if mock.AllFunc == nil {
+		var (
+			out1 []racers.Race
+			out2 error
+		)
+		return out1, out2
+	}
+	return mock.AllFunc(ctx)
+}
+
+// AllCalls gets all the calls that were made to All.
+// Check the length with:
+//     len(mockedRacesRepository.AllCalls())
+func (mock *RacesRepositoryMock) AllCalls() []struct {
+	Ctx context.Context
+} {
+	var calls []struct {
+		Ctx context.Context
+	}
+	mock.lockAll.RLock()
+	calls = mock.calls.All
+	mock.lockAll.RUnlock()
+	return calls
+}
+
+// Exists calls ExistsFunc.
+func (mock *RacesRepositoryMock) Exists(ctx context.Context, race racers.Race) (bool, error) {
+	callInfo := struct {
+		Ctx  context.Context
+		Race racers.Race
+	}{
+		Ctx:  ctx,
+		Race: race,
+	}
+	mock.lockExists.Lock()
+	mock.calls.Exists = append(mock.calls.Exists, callInfo)
+	mock.lockExists.Unlock()
+	if mock.ExistsFunc == nil {
+		var (
+			out1 bool
+			out2 error
+		)
+		return out1, out2
+	}
+	return mock.ExistsFunc(ctx, race)
+}
+
+// ExistsCalls gets all the calls that were made to Exists.
+// Check the length with:
+//     len(mockedRacesRepository.ExistsCalls())
+func (mock *RacesRepositoryMock) ExistsCalls() []struct {
+	Ctx  context.Context
+	Race racers.Race
+} {
+	var calls []struct {
+		Ctx  context.Context
+		Race racers.Race
+	}
+	mock.lockExists.RLock()
+	calls = mock.calls.Exists
+	mock.lockExists.RUnlock()
+	return calls
+}
+
+// Get calls GetFunc.
+func (mock *RacesRepositoryMock) Get(ctx context.Context, id racers.RaceID) (racers.Race, error) {
 	callInfo := struct {
 		Ctx context.Context
 		ID  racers.RaceID
@@ -73,16 +169,23 @@ func (mock *RacesRepositoryMock) ByID(ctx context.Context, id racers.RaceID) (*r
 		Ctx: ctx,
 		ID:  id,
 	}
-	mock.lockByID.Lock()
-	mock.calls.ByID = append(mock.calls.ByID, callInfo)
-	mock.lockByID.Unlock()
-	return mock.ByIDFunc(ctx, id)
+	mock.lockGet.Lock()
+	mock.calls.Get = append(mock.calls.Get, callInfo)
+	mock.lockGet.Unlock()
+	if mock.GetFunc == nil {
+		var (
+			out1 racers.Race
+			out2 error
+		)
+		return out1, out2
+	}
+	return mock.GetFunc(ctx, id)
 }
 
-// ByIDCalls gets all the calls that were made to ByID.
+// GetCalls gets all the calls that were made to Get.
 // Check the length with:
-//     len(mockedRacesRepository.ByIDCalls())
-func (mock *RacesRepositoryMock) ByIDCalls() []struct {
+//     len(mockedRacesRepository.GetCalls())
+func (mock *RacesRepositoryMock) GetCalls() []struct {
 	Ctx context.Context
 	ID  racers.RaceID
 } {
@@ -90,17 +193,14 @@ func (mock *RacesRepositoryMock) ByIDCalls() []struct {
 		Ctx context.Context
 		ID  racers.RaceID
 	}
-	mock.lockByID.RLock()
-	calls = mock.calls.ByID
-	mock.lockByID.RUnlock()
+	mock.lockGet.RLock()
+	calls = mock.calls.Get
+	mock.lockGet.RUnlock()
 	return calls
 }
 
 // Save calls SaveFunc.
 func (mock *RacesRepositoryMock) Save(ctx context.Context, race racers.Race) error {
-	if mock.SaveFunc == nil {
-		panic("RacesRepositoryMock.SaveFunc: method is nil but RacesRepository.Save was just called")
-	}
 	callInfo := struct {
 		Ctx  context.Context
 		Race racers.Race
@@ -111,6 +211,12 @@ func (mock *RacesRepositoryMock) Save(ctx context.Context, race racers.Race) err
 	mock.lockSave.Lock()
 	mock.calls.Save = append(mock.calls.Save, callInfo)
 	mock.lockSave.Unlock()
+	if mock.SaveFunc == nil {
+		var (
+			out1 error
+		)
+		return out1
+	}
 	return mock.SaveFunc(ctx, race)
 }
 
@@ -131,126 +237,6 @@ func (mock *RacesRepositoryMock) SaveCalls() []struct {
 	return calls
 }
 
-// Ensure, that UsersRepositoryMock does implement service.UsersRepository.
-// If this is not the case, regenerate this file with moq.
-var _ service.UsersRepository = &UsersRepositoryMock{}
-
-// UsersRepositoryMock is a mock implementation of service.UsersRepository.
-//
-//     func TestSomethingThatUsesUsersRepository(t *testing.T) {
-//
-//         // make and configure a mocked service.UsersRepository
-//         mockedUsersRepository := &UsersRepositoryMock{
-//             ByIDFunc: func(ctx context.Context, id racers.UserID) (*racers.User, error) {
-// 	               panic("mock out the ByID method")
-//             },
-//             SaveFunc: func(ctx context.Context, user racers.User) error {
-// 	               panic("mock out the Save method")
-//             },
-//         }
-//
-//         // use mockedUsersRepository in code that requires service.UsersRepository
-//         // and then make assertions.
-//
-//     }
-type UsersRepositoryMock struct {
-	// ByIDFunc mocks the ByID method.
-	ByIDFunc func(ctx context.Context, id racers.UserID) (*racers.User, error)
-
-	// SaveFunc mocks the Save method.
-	SaveFunc func(ctx context.Context, user racers.User) error
-
-	// calls tracks calls to the methods.
-	calls struct {
-		// ByID holds details about calls to the ByID method.
-		ByID []struct {
-			// Ctx is the ctx argument value.
-			Ctx context.Context
-			// ID is the id argument value.
-			ID racers.UserID
-		}
-		// Save holds details about calls to the Save method.
-		Save []struct {
-			// Ctx is the ctx argument value.
-			Ctx context.Context
-			// User is the user argument value.
-			User racers.User
-		}
-	}
-	lockByID sync.RWMutex
-	lockSave sync.RWMutex
-}
-
-// ByID calls ByIDFunc.
-func (mock *UsersRepositoryMock) ByID(ctx context.Context, id racers.UserID) (*racers.User, error) {
-	if mock.ByIDFunc == nil {
-		panic("UsersRepositoryMock.ByIDFunc: method is nil but UsersRepository.ByID was just called")
-	}
-	callInfo := struct {
-		Ctx context.Context
-		ID  racers.UserID
-	}{
-		Ctx: ctx,
-		ID:  id,
-	}
-	mock.lockByID.Lock()
-	mock.calls.ByID = append(mock.calls.ByID, callInfo)
-	mock.lockByID.Unlock()
-	return mock.ByIDFunc(ctx, id)
-}
-
-// ByIDCalls gets all the calls that were made to ByID.
-// Check the length with:
-//     len(mockedUsersRepository.ByIDCalls())
-func (mock *UsersRepositoryMock) ByIDCalls() []struct {
-	Ctx context.Context
-	ID  racers.UserID
-} {
-	var calls []struct {
-		Ctx context.Context
-		ID  racers.UserID
-	}
-	mock.lockByID.RLock()
-	calls = mock.calls.ByID
-	mock.lockByID.RUnlock()
-	return calls
-}
-
-// Save calls SaveFunc.
-func (mock *UsersRepositoryMock) Save(ctx context.Context, user racers.User) error {
-	if mock.SaveFunc == nil {
-		panic("UsersRepositoryMock.SaveFunc: method is nil but UsersRepository.Save was just called")
-	}
-	callInfo := struct {
-		Ctx  context.Context
-		User racers.User
-	}{
-		Ctx:  ctx,
-		User: user,
-	}
-	mock.lockSave.Lock()
-	mock.calls.Save = append(mock.calls.Save, callInfo)
-	mock.lockSave.Unlock()
-	return mock.SaveFunc(ctx, user)
-}
-
-// SaveCalls gets all the calls that were made to Save.
-// Check the length with:
-//     len(mockedUsersRepository.SaveCalls())
-func (mock *UsersRepositoryMock) SaveCalls() []struct {
-	Ctx  context.Context
-	User racers.User
-} {
-	var calls []struct {
-		Ctx  context.Context
-		User racers.User
-	}
-	mock.lockSave.RLock()
-	calls = mock.calls.Save
-	mock.lockSave.RUnlock()
-	return calls
-}
-
 // Ensure, that TeamsRepositoryMock does implement service.TeamsRepository.
 // If this is not the case, regenerate this file with moq.
 var _ service.TeamsRepository = &TeamsRepositoryMock{}
@@ -261,11 +247,11 @@ var _ service.TeamsRepository = &TeamsRepositoryMock{}
 //
 //         // make and configure a mocked service.TeamsRepository
 //         mockedTeamsRepository := &TeamsRepositoryMock{
-//             ByIDFunc: func(ctx context.Context, id racers.TeamID) (*racers.Team, error) {
-// 	               panic("mock out the ByID method")
-//             },
-//             ByMemberFunc: func(ctx context.Context, memberID racers.UserID) (*racers.Team, error) {
+//             ByMemberFunc: func(ctx context.Context, id racers.UserID) (*racers.Team, error) {
 // 	               panic("mock out the ByMember method")
+//             },
+//             GetFunc: func(ctx context.Context, id racers.TeamID) (racers.Team, error) {
+// 	               panic("mock out the Get method")
 //             },
 //             SaveFunc: func(ctx context.Context, team racers.Team) error {
 // 	               panic("mock out the Save method")
@@ -277,30 +263,30 @@ var _ service.TeamsRepository = &TeamsRepositoryMock{}
 //
 //     }
 type TeamsRepositoryMock struct {
-	// ByIDFunc mocks the ByID method.
-	ByIDFunc func(ctx context.Context, id racers.TeamID) (*racers.Team, error)
-
 	// ByMemberFunc mocks the ByMember method.
-	ByMemberFunc func(ctx context.Context, memberID racers.UserID) (*racers.Team, error)
+	ByMemberFunc func(ctx context.Context, id racers.UserID) (*racers.Team, error)
+
+	// GetFunc mocks the Get method.
+	GetFunc func(ctx context.Context, id racers.TeamID) (racers.Team, error)
 
 	// SaveFunc mocks the Save method.
 	SaveFunc func(ctx context.Context, team racers.Team) error
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// ByID holds details about calls to the ByID method.
-		ByID []struct {
-			// Ctx is the ctx argument value.
-			Ctx context.Context
-			// ID is the id argument value.
-			ID racers.TeamID
-		}
 		// ByMember holds details about calls to the ByMember method.
 		ByMember []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// MemberID is the memberID argument value.
-			MemberID racers.UserID
+			// ID is the id argument value.
+			ID racers.UserID
+		}
+		// Get holds details about calls to the Get method.
+		Get []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// ID is the id argument value.
+			ID racers.TeamID
 		}
 		// Save holds details about calls to the Save method.
 		Save []struct {
@@ -310,74 +296,43 @@ type TeamsRepositoryMock struct {
 			Team racers.Team
 		}
 	}
-	lockByID     sync.RWMutex
 	lockByMember sync.RWMutex
+	lockGet      sync.RWMutex
 	lockSave     sync.RWMutex
 }
 
-// ByID calls ByIDFunc.
-func (mock *TeamsRepositoryMock) ByID(ctx context.Context, id racers.TeamID) (*racers.Team, error) {
-	if mock.ByIDFunc == nil {
-		panic("TeamsRepositoryMock.ByIDFunc: method is nil but TeamsRepository.ByID was just called")
-	}
+// ByMember calls ByMemberFunc.
+func (mock *TeamsRepositoryMock) ByMember(ctx context.Context, id racers.UserID) (*racers.Team, error) {
 	callInfo := struct {
 		Ctx context.Context
-		ID  racers.TeamID
+		ID  racers.UserID
 	}{
 		Ctx: ctx,
 		ID:  id,
 	}
-	mock.lockByID.Lock()
-	mock.calls.ByID = append(mock.calls.ByID, callInfo)
-	mock.lockByID.Unlock()
-	return mock.ByIDFunc(ctx, id)
-}
-
-// ByIDCalls gets all the calls that were made to ByID.
-// Check the length with:
-//     len(mockedTeamsRepository.ByIDCalls())
-func (mock *TeamsRepositoryMock) ByIDCalls() []struct {
-	Ctx context.Context
-	ID  racers.TeamID
-} {
-	var calls []struct {
-		Ctx context.Context
-		ID  racers.TeamID
-	}
-	mock.lockByID.RLock()
-	calls = mock.calls.ByID
-	mock.lockByID.RUnlock()
-	return calls
-}
-
-// ByMember calls ByMemberFunc.
-func (mock *TeamsRepositoryMock) ByMember(ctx context.Context, memberID racers.UserID) (*racers.Team, error) {
-	if mock.ByMemberFunc == nil {
-		panic("TeamsRepositoryMock.ByMemberFunc: method is nil but TeamsRepository.ByMember was just called")
-	}
-	callInfo := struct {
-		Ctx      context.Context
-		MemberID racers.UserID
-	}{
-		Ctx:      ctx,
-		MemberID: memberID,
-	}
 	mock.lockByMember.Lock()
 	mock.calls.ByMember = append(mock.calls.ByMember, callInfo)
 	mock.lockByMember.Unlock()
-	return mock.ByMemberFunc(ctx, memberID)
+	if mock.ByMemberFunc == nil {
+		var (
+			out1 *racers.Team
+			out2 error
+		)
+		return out1, out2
+	}
+	return mock.ByMemberFunc(ctx, id)
 }
 
 // ByMemberCalls gets all the calls that were made to ByMember.
 // Check the length with:
 //     len(mockedTeamsRepository.ByMemberCalls())
 func (mock *TeamsRepositoryMock) ByMemberCalls() []struct {
-	Ctx      context.Context
-	MemberID racers.UserID
+	Ctx context.Context
+	ID  racers.UserID
 } {
 	var calls []struct {
-		Ctx      context.Context
-		MemberID racers.UserID
+		Ctx context.Context
+		ID  racers.UserID
 	}
 	mock.lockByMember.RLock()
 	calls = mock.calls.ByMember
@@ -385,11 +340,47 @@ func (mock *TeamsRepositoryMock) ByMemberCalls() []struct {
 	return calls
 }
 
+// Get calls GetFunc.
+func (mock *TeamsRepositoryMock) Get(ctx context.Context, id racers.TeamID) (racers.Team, error) {
+	callInfo := struct {
+		Ctx context.Context
+		ID  racers.TeamID
+	}{
+		Ctx: ctx,
+		ID:  id,
+	}
+	mock.lockGet.Lock()
+	mock.calls.Get = append(mock.calls.Get, callInfo)
+	mock.lockGet.Unlock()
+	if mock.GetFunc == nil {
+		var (
+			out1 racers.Team
+			out2 error
+		)
+		return out1, out2
+	}
+	return mock.GetFunc(ctx, id)
+}
+
+// GetCalls gets all the calls that were made to Get.
+// Check the length with:
+//     len(mockedTeamsRepository.GetCalls())
+func (mock *TeamsRepositoryMock) GetCalls() []struct {
+	Ctx context.Context
+	ID  racers.TeamID
+} {
+	var calls []struct {
+		Ctx context.Context
+		ID  racers.TeamID
+	}
+	mock.lockGet.RLock()
+	calls = mock.calls.Get
+	mock.lockGet.RUnlock()
+	return calls
+}
+
 // Save calls SaveFunc.
 func (mock *TeamsRepositoryMock) Save(ctx context.Context, team racers.Team) error {
-	if mock.SaveFunc == nil {
-		panic("TeamsRepositoryMock.SaveFunc: method is nil but TeamsRepository.Save was just called")
-	}
 	callInfo := struct {
 		Ctx  context.Context
 		Team racers.Team
@@ -400,6 +391,12 @@ func (mock *TeamsRepositoryMock) Save(ctx context.Context, team racers.Team) err
 	mock.lockSave.Lock()
 	mock.calls.Save = append(mock.calls.Save, callInfo)
 	mock.lockSave.Unlock()
+	if mock.SaveFunc == nil {
+		var (
+			out1 error
+		)
+		return out1
+	}
 	return mock.SaveFunc(ctx, team)
 }
 
@@ -417,5 +414,126 @@ func (mock *TeamsRepositoryMock) SaveCalls() []struct {
 	mock.lockSave.RLock()
 	calls = mock.calls.Save
 	mock.lockSave.RUnlock()
+	return calls
+}
+
+// Ensure, that UsersGetterMock does implement service.UsersGetter.
+// If this is not the case, regenerate this file with moq.
+var _ service.UsersGetter = &UsersGetterMock{}
+
+// UsersGetterMock is a mock implementation of service.UsersGetter.
+//
+//     func TestSomethingThatUsesUsersGetter(t *testing.T) {
+//
+//         // make and configure a mocked service.UsersGetter
+//         mockedUsersGetter := &UsersGetterMock{
+//             CurrentFunc: func(ctx context.Context) racers.User {
+// 	               panic("mock out the Current method")
+//             },
+//             GetFunc: func(ctx context.Context, id racers.UserID) (racers.User, error) {
+// 	               panic("mock out the Get method")
+//             },
+//         }
+//
+//         // use mockedUsersGetter in code that requires service.UsersGetter
+//         // and then make assertions.
+//
+//     }
+type UsersGetterMock struct {
+	// CurrentFunc mocks the Current method.
+	CurrentFunc func(ctx context.Context) racers.User
+
+	// GetFunc mocks the Get method.
+	GetFunc func(ctx context.Context, id racers.UserID) (racers.User, error)
+
+	// calls tracks calls to the methods.
+	calls struct {
+		// Current holds details about calls to the Current method.
+		Current []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+		}
+		// Get holds details about calls to the Get method.
+		Get []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// ID is the id argument value.
+			ID racers.UserID
+		}
+	}
+	lockCurrent sync.RWMutex
+	lockGet     sync.RWMutex
+}
+
+// Current calls CurrentFunc.
+func (mock *UsersGetterMock) Current(ctx context.Context) racers.User {
+	callInfo := struct {
+		Ctx context.Context
+	}{
+		Ctx: ctx,
+	}
+	mock.lockCurrent.Lock()
+	mock.calls.Current = append(mock.calls.Current, callInfo)
+	mock.lockCurrent.Unlock()
+	if mock.CurrentFunc == nil {
+		var (
+			out1 racers.User
+		)
+		return out1
+	}
+	return mock.CurrentFunc(ctx)
+}
+
+// CurrentCalls gets all the calls that were made to Current.
+// Check the length with:
+//     len(mockedUsersGetter.CurrentCalls())
+func (mock *UsersGetterMock) CurrentCalls() []struct {
+	Ctx context.Context
+} {
+	var calls []struct {
+		Ctx context.Context
+	}
+	mock.lockCurrent.RLock()
+	calls = mock.calls.Current
+	mock.lockCurrent.RUnlock()
+	return calls
+}
+
+// Get calls GetFunc.
+func (mock *UsersGetterMock) Get(ctx context.Context, id racers.UserID) (racers.User, error) {
+	callInfo := struct {
+		Ctx context.Context
+		ID  racers.UserID
+	}{
+		Ctx: ctx,
+		ID:  id,
+	}
+	mock.lockGet.Lock()
+	mock.calls.Get = append(mock.calls.Get, callInfo)
+	mock.lockGet.Unlock()
+	if mock.GetFunc == nil {
+		var (
+			out1 racers.User
+			out2 error
+		)
+		return out1, out2
+	}
+	return mock.GetFunc(ctx, id)
+}
+
+// GetCalls gets all the calls that were made to Get.
+// Check the length with:
+//     len(mockedUsersGetter.GetCalls())
+func (mock *UsersGetterMock) GetCalls() []struct {
+	Ctx context.Context
+	ID  racers.UserID
+} {
+	var calls []struct {
+		Ctx context.Context
+		ID  racers.UserID
+	}
+	mock.lockGet.RLock()
+	calls = mock.calls.Get
+	mock.lockGet.RUnlock()
 	return calls
 }

@@ -8,23 +8,22 @@ import (
 	"testing"
 
 	"github.com/99designs/gqlgen/client"
-	"github.com/kataras/golog"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/xabi93/racers/internal/api/graph"
-	"github.com/xabi93/racers/internal/config"
 	"github.com/xabi93/racers/internal/id"
-	"github.com/xabi93/racers/internal/log"
+	"github.com/xabi93/racers/internal/instrumentation/log"
 	"github.com/xabi93/racers/internal/server"
+	"github.com/xabi93/racers/internal/server/graph"
 	"github.com/xabi93/racers/internal/storage/postgres"
 	"github.com/xabi93/racers/internal/storage/postgres/test"
+	"github.com/xabi93/racers/internal/users"
 )
 
-var conf config.Conf
+var conf server.Conf
 
 func TestMain(m *testing.M) {
 	var err error
-	conf, err = config.Load()
+	conf, err = server.LoadConf()
 	if err != nil {
 		stdlog.Fatalf("loading config tests: %s", err)
 	}
@@ -55,6 +54,7 @@ func initTest(f func() int) int {
 				{HostIP: "0.0.0.0", HostPort: conf.Postgres.Port},
 			},
 		},
+		Cmd: []string{"postgres", "-c", "log_statement=all"},
 	}
 
 	resource, err := pool.RunWithOptions(&opts)
@@ -69,11 +69,10 @@ func initTest(f func() int) int {
 		return failInit("Could not start resource: %s", err.Error())
 	}
 
-	resource.Expire(60)
 	defer func() {
 		panicErr := recover()
 		if err := pool.Purge(resource); err != nil {
-			golog.Fatalf("Could not purge resource: %s", err)
+			failInit("Could not purge resource: %s", err)
 		}
 		if panicErr != nil {
 			panic(panicErr)
@@ -82,7 +81,7 @@ func initTest(f func() int) int {
 
 	var dbConn *sql.DB
 	if err = pool.Retry(func() error {
-		dbConn, err = postgres.New(conf.Postgres)
+		dbConn, err = postgres.Connect(conf.Postgres)
 		if err != nil {
 			return err
 		}
@@ -112,17 +111,19 @@ func newSuite(t *testing.T) suite {
 		t.Fatalf("initializing testing conn %s", err)
 	}
 
-	srv, err := server.New(conf, log.Noop{}, db)
+	srv, err := server.New(conf, log.NoopLogger{}, db, users.Mock{})
 	if err != nil {
 		t.Fatalf("initializing server %s", err)
 	}
 	return suite{
 		graphql: client.New(srv.Handler(), client.Path(server.GraphEndpoint)),
+		db:      db,
 	}
 }
 
 type suite struct {
 	graphql *client.Client
+	db      *sql.DB
 }
 
 type getRaceResult struct {
@@ -144,11 +145,7 @@ func getRace(c *client.Client, id id.ID) getRaceResult {
 				name
 				date
 			}
-			...on RaceByIDNotFound {
-				id
-			}
-		}
-		}`
+		}}`
 
 	var resp getRaceResult
 
@@ -168,18 +165,18 @@ type createRaceResult struct {
 }
 
 func createRace(c *client.Client, req graph.Race) createRaceResult {
-	const mutation = `mutation($name: String!, $date: DateTime!) {
-		createRace(race:{name:$name,date:$date}){
+	const mutation = `mutation($id: ID!, $name: String!, $date: DateTime!) {
+		createRace(race:{id: $id, name: $name, date: $date}){
 			__typename
 			...on Race {
 				id
 				name
 				date
 			}
-			...on InvalidNameError {
+			...on InvalidRaceNameError {
 				message
 			}
-			...on InvalidDateError {
+			...on InvalidRaceDateError {
 				message
 			}
 		}}`
@@ -187,6 +184,7 @@ func createRace(c *client.Client, req graph.Race) createRaceResult {
 	var resp createRaceResult
 
 	c.MustPost(mutation, &resp,
+		client.Var("id", req.ID),
 		client.Var("name", req.Name),
 		client.Var("date", req.Date),
 	)

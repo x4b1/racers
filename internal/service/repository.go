@@ -6,24 +6,17 @@ import (
 	racers "github.com/xabi93/racers/internal"
 )
 
-//go:generate moq -pkg service_test -out mock_repository_test.go . RacesRepository UsersRepository TeamsRepository
+//go:generate moq -stub -pkg service_test -out mock_repository_test.go . RacesRepository TeamsRepository UsersGetter
 
 type RacesRepository interface {
 	RacesGetter
+	Exists(ctx context.Context, race racers.Race) (bool, error)
 	Save(ctx context.Context, race racers.Race) error
 }
 
 type RacesGetter interface {
-	ByID(ctx context.Context, id racers.RaceID) (*racers.Race, error)
-}
-
-type UsersRepository interface {
-	UsersGetter
-	Save(ctx context.Context, user racers.User) error
-}
-
-type UsersGetter interface {
-	ByID(ctx context.Context, id racers.UserID) (*racers.User, error)
+	All(ctx context.Context) ([]racers.Race, error)
+	Get(ctx context.Context, id racers.RaceID) (racers.Race, error)
 }
 
 type TeamsRepository interface {
@@ -32,6 +25,11 @@ type TeamsRepository interface {
 }
 
 type TeamsGetter interface {
-	ByID(ctx context.Context, id racers.TeamID) (*racers.Team, error)
-	ByMember(ctx context.Context, memberID racers.UserID) (*racers.Team, error)
+	ByMember(ctx context.Context, id racers.UserID) (*racers.Team, error)
+	Get(ctx context.Context, id racers.TeamID) (racers.Team, error)
+}
+
+type UsersGetter interface {
+	Get(ctx context.Context, id racers.UserID) (racers.User, error)
+	Current(ctx context.Context) racers.User
 }

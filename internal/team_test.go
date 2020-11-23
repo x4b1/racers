@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	teamID      = racers.TeamID(id.GenerateID())
+	teamID      = racers.TeamID(id.Generate())
 	teamName    = racers.TeamName("athletic")
-	teamAdminID = racers.UserID(id.GenerateID())
+	teamAdminID = racers.UserID(id.Generate())
 )
 
 func TestTeamID(t *testing.T) {
@@ -23,7 +23,7 @@ func TestTeamID(t *testing.T) {
 	})
 
 	t.Run("when valid id returns TeamID and no error", func(t *testing.T) {
-		id := id.GenerateID()
+		id := id.Generate()
 		teamID, err := racers.NewTeamID(id.String())
 
 		require.Equal(racers.TeamID(id), teamID)
@@ -52,41 +52,29 @@ func TestNewTeam(t *testing.T) {
 
 	team := racers.NewTeam(teamID, teamName, teamAdminID)
 
-	require.Equal(team.ID(), teamID)
-	require.Equal(team.Name(), teamName)
-	require.Equal(team.Admin(), teamAdminID)
-
-	events := team.ConsumeEvents()
-	require.Empty(events)
+	require.Equal(team.ID, teamID)
+	require.Equal(team.Name, teamName)
+	require.Equal(team.Admin, teamAdminID)
 }
 
 func TestCreateTeam(t *testing.T) {
 	require := require.New(t)
 
-	r := racers.CreateTeam(teamID, teamName, racers.NewUser(teamAdminID, ""))
-
-	events := r.ConsumeEvents()
-	require.Len(events, 1)
-	createdEvent := events[0].(racers.TeamCreated)
-	require.Equal(createdEvent.TeamID, teamID)
-	require.Equal(createdEvent.TeamName, teamName)
-	require.Equal(createdEvent.TeamAdmin, teamAdminID)
-	require.Equal(createdEvent.TeamMembers, racers.NewTeamMembers(teamAdminID))
+	r := racers.CreateTeam(teamID, teamName, racers.User{teamAdminID})
 
 	require.Equal(r, racers.NewTeam(teamID, teamName, teamAdminID, racers.TeamMembersOpt(racers.NewTeamMembers(teamAdminID))))
 }
 
-func TestTeam(t *testing.T) {
+func TestJoinTeam(t *testing.T) {
 	require := require.New(t)
 	t.Run(`Given a team with only with admin,
 	When joins other user with team,
 	Then returns UserAlreadyInTeam error`, func(t *testing.T) {
 		team := racers.NewTeam(teamID, teamName, teamAdminID)
 
-		err := team.Join(racers.NewTeamMember(racers.NewUser(teamAdminID, ""), &team))
+		_, err := racers.JoinTeam(team, racers.User{userID}, &team)
 
-		require.True(errors.Is(err, racers.UserAlreadyInTeam{UserID: teamAdminID, TeamID: teamID}))
-		require.Equal(len(team.ConsumeEvents()), 0)
+		require.True(errors.Is(err, racers.UserAlreadyInTeamError{UserID: userID, TeamID: teamID}))
 	})
 
 	t.Run(`Given a team with only with admin,
@@ -94,13 +82,7 @@ func TestTeam(t *testing.T) {
 	Then returns no error and generates event`, func(t *testing.T) {
 		team := racers.NewTeam(teamID, teamName, teamAdminID)
 
-		newUserID := racers.UserID(id.GenerateID())
-		require.NoError(team.Join(racers.NewTeamMember(racers.NewUser(newUserID, ""), nil)))
-
-		events := team.ConsumeEvents()
-		require.Equal(len(events), 1)
-		joinedEvent := events[0].(racers.UserJoinedTeam)
-		require.Equal(joinedEvent.TeamID, teamID)
-		require.Equal(joinedEvent.UserID, newUserID)
+		team, err := racers.JoinTeam(team, racers.User{userID}, nil)
+		require.NoError(err)
 	})
 }

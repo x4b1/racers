@@ -5,11 +5,10 @@ import (
 	"io"
 	"os"
 
-	"github.com/kr/pretty"
-	"github.com/xabi93/racers/internal/config"
-	"github.com/xabi93/racers/internal/log"
+	"github.com/xabi93/racers/internal/instrumentation/log"
 	"github.com/xabi93/racers/internal/server"
 	"github.com/xabi93/racers/internal/storage/postgres"
+	"github.com/xabi93/racers/internal/users"
 )
 
 func main() {
@@ -20,28 +19,27 @@ func main() {
 }
 
 func Run(out io.Writer) error {
-	conf, err := config.Load()
+	conf, err := server.LoadConf()
 	if err != nil {
 		return err
 	}
 
-	log, err := log.NewZap(conf.Env, out)
+	log, err := log.NewLogrus(out)
 	if err != nil {
 		return err
 	}
 
-	db, err := postgres.New(conf.Postgres)
+	db, err := postgres.Connect(conf.Postgres)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
 	if err := postgres.RunMigrations(conf.Postgres, db); err != nil {
-		pretty.Println(err)
 		return err
 	}
 
-	s, err := server.New(conf, log, db)
+	s, err := server.New(conf, log, db, users.Mock{})
 	if err != nil {
 		return err
 	}

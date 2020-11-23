@@ -1,40 +1,20 @@
 package service
 
-import (
-	"fmt"
-
-	racers "github.com/xabi93/racers/internal"
-)
+import "github.com/xabi93/racers/internal/errors"
 
 // Races errors
-type RaceByIDNotFoundError struct {
-	ID racers.RaceID
-}
+var (
+	ErrRaceNotFound      = errors.New("race not found")
+	ErrRaceAlreadyExists = errors.New("race already exists")
+)
 
-func (err RaceByIDNotFoundError) Error() string {
-	return fmt.Sprintf("race %s not found", err.ID)
-}
+// Users errors
+var (
+	ErrUserNotFound = errors.New("user not found")
+)
 
-type RaceNameAlreadyExistsError struct {
-	Name racers.RaceName
-}
-
-func (err RaceNameAlreadyExistsError) Error() string {
-	return fmt.Sprintf("race name %s already exits", err.Name)
-}
-
-type UserByIDNotFoundError struct {
-	ID racers.UserID
-}
-
-func (err UserByIDNotFoundError) Error() string {
-	return fmt.Sprintf("user %s not found", err.ID)
-}
-
-type TeamByIDNotFoundError struct {
-	ID racers.TeamID
-}
-
-func (err TeamByIDNotFoundError) Error() string {
-	return fmt.Sprintf("team %s not found", err.ID)
-}
+// Teams errors
+var (
+	ErrTeamNotFound      = errors.New("team not found")
+	ErrTeamAlreadyExists = errors.New("team already exists")
+)

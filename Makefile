@@ -4,7 +4,7 @@ test:
 	go test -race ./...
 
 lint:
-	golangci-lint run
+	staticcheck ./...
 
 migration-create:
 	migrate create -ext sql -dir storage/postgres/migrations -seq $(name)

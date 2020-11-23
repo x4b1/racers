@@ -5,19 +5,12 @@ import (
 	"fmt"
 
 	"github.com/xabi93/racers/internal/id"
-	baseid "github.com/xabi93/racers/internal/id"
 )
 
 type (
-	UserCreated struct {
-		BaseEvent
-		UserID   `json:"user_id,omitempty"`
-		UserName `json:"user_name,omitempty"`
-	}
-)
-
-type (
-	UserID             id.ID
+	// UserID defines a unique identifier for a user
+	UserID id.ID
+	// InvalidUserIDError means the given user id is not correct
 	InvalidUserIDError struct{ error }
 )
 
@@ -25,40 +18,27 @@ func (err InvalidUserIDError) Error() string {
 	return fmt.Sprintf("invalid user id: %s", err.error)
 }
 
+// NewUserID parses a id and returns a UserID if it's ok
 func NewUserID(s string) (UserID, error) {
 	id, err := id.NewID(s)
 	if err != nil {
-		return "", InvalidUserIDError{err}
+		return UserID{}, InvalidUserIDError{err}
 	}
 
 	return UserID(id), nil
 }
 
-type (
-	UserName             string
-	InvalidUserNameError struct{ error }
-)
-
-func (err InvalidUserNameError) Error() string {
-	return fmt.Sprintf("invalid user name: %s", err.error)
-}
-
-func NewUserName(s string) (UserName, error) {
-	if s == "" {
-		return "", InvalidUserNameError{errors.New("empty name")}
-	}
-
-	return UserName(s), nil
-}
-
+// userList is a list of users
 type userList map[UserID]struct{}
 
+// is returns if a user is in the list
 func (ul userList) is(id UserID) bool {
 	_, ok := ul[id]
 
 	return ok
 }
 
+// add adds a user to the list
 func (ul *userList) add(id UserID) {
 	if *ul == nil {
 		*ul = make(map[UserID]struct{})
@@ -67,6 +47,7 @@ func (ul *userList) add(id UserID) {
 	(*ul)[id] = struct{}{}
 }
 
+// List returns a list of users
 func (ul userList) List() []UserID {
 	l := make([]UserID, 0, len(ul))
 	for u := range ul {
@@ -76,37 +57,10 @@ func (ul userList) List() []UserID {
 	return l
 }
 
-func NewUser(id UserID, name UserName) User {
-	return User{newAggregate(), id, name}
-}
+// ErrUnknownUser means a user does not exists in the service
+var ErrUnknownUser = errors.New("unknown user")
 
-func CreateUser(id UserID, name UserName) User {
-	u := NewUser(id, name)
-
-	u.aggregate.record(UserCreated{
-		NewBaseEvent(baseid.ID(u.id)),
-		u.id,
-		u.name,
-	})
-
-	return u
-}
-
+// User represents a user in the service
 type User struct {
-	aggregate
-
-	id   UserID
-	name UserName
-}
-
-func (u User) ID() UserID {
-	return u.id
-}
-
-func (u User) Name() UserName {
-	return u.name
-}
-
-func (u *User) ConsumeEvents() []Event {
-	return u.aggregate.ConsumeEvents()
+	ID UserID
 }

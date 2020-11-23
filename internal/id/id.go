@@ -2,21 +2,21 @@ package id
 
 import "github.com/google/uuid"
 
-type ID string
-
-func (id ID) String() string {
-	return string(id)
-}
+type ID struct{ uuid.UUID }
 
 func NewID(s string) (ID, error) {
 	uuid, err := uuid.Parse(s)
 	if err != nil {
-		return "", err
+		return ID{}, err
 	}
 
-	return ID(uuid.String()), nil
+	return ID{uuid}, nil
 }
 
-func GenerateID() ID {
-	return ID(uuid.Must(uuid.NewRandom()).String())
+func MustParse(s string) ID {
+	return ID{uuid.MustParse(s)}
+}
+
+func Generate() ID {
+	return ID{uuid.Must(uuid.NewRandom())}
 }

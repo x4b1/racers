@@ -1,63 +1,97 @@
 package server
 
-// const GraphEndpoint = "/graph"
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"net"
+	"net/http"
 
-// func New(conf config.Conf, logger log.Logger, db *sql.DB) (Server, error) {
-// 	s := Server{conf: conf, logger: logger, db: db}
+	"github.com/xabi93/racers/internal/instrumentation/log"
+	instrumentation "github.com/xabi93/racers/internal/instrumentation/metrics"
+	"github.com/xabi93/racers/internal/server/graph"
+	"github.com/xabi93/racers/internal/service"
+	"github.com/xabi93/racers/internal/storage/postgres"
+	"github.com/xabi93/racers/internal/users"
 
-// 	if err := s.initService(); err != nil {
-// 		return Server{}, err
-// 	}
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+)
 
-// 	s.initHandler()
+const GraphEndpoint = "/graph"
 
-// 	return s, nil
-// }
+func New(conf Conf, logger log.Logger, db *sql.DB, uProvider users.UsersProvider) (Server, error) {
+	metrics, err := instrumentation.NewMetrics()
+	if err != nil {
+		return Server{}, err
+	}
 
-// type Server struct {
-// 	conf   config.Conf
-// 	logger log.Logger
-// 	db     *sql.DB
+	s := Server{
+		conf:    conf,
+		logger:  logger,
+		db:      db,
+		metrics: metrics,
+		users:   users.Users{UsersProvider: uProvider},
+	}
 
-// 	handler http.Handler
+	if err := s.initService(); err != nil {
+		return Server{}, err
+	}
 
-// 	service *service.Service
-// }
+	s.initHandler()
 
-// func (s *Server) initService() error {
-// 	db, err := gorm.New(s.db)
-// 	if err != nil {
-// 		return err
-// 	}
+	return s, nil
+}
 
-// 	eventsRepo := gorm.NewEvents(db)
-// 	racesRepo := gorm.NewRaces(db, eventsRepo)
+type Server struct {
+	conf    Conf
+	logger  log.Logger
+	db      *sql.DB
+	users   users.Users
+	metrics instrumentation.Metrics
 
-// 	s.service = service.NewService(
-// 		service.NewRacesMetrics(service.NewRacesService(racesRepo, nil)),
-// 		nil,
-// 	)
+	handler http.Handler
 
-// 	return nil
-// }
+	races service.Races
+}
 
-// func (s *Server) initHandler() {
-// 	r := mux.NewRouter()
+func (s *Server) initService() error {
+	db, err := postgres.New(s.db)
+	if err != nil {
+		return err
+	}
 
-// 	r.Handle("/playground", playground.Handler("racers", GraphEndpoint))
-// 	r.Handle(GraphEndpoint, handler.NewDefaultServer(graph.NewExecutableSchema(graph.New(s.service, ent.New(s.conf.Postgres, s.logger, s.db)))))
+	eventsRepo := postgres.NewEvents(db)
+	racesRepo := postgres.NewRaces(db)
 
-// 	s.handler = r
-// }
+	s.races = service.NewRaces(racesRepo, s.users, postgres.TransactionFactory(db), eventsRepo)
 
-// func (s *Server) Handler() http.Handler {
-// 	return s.handler
-// }
+	return nil
+}
 
-// func (s *Server) Serve() error {
-// 	addr := net.JoinHostPort("", s.conf.Port)
+func (s *Server) initHandler() {
+	r := mux.NewRouter()
 
-// 	s.logger.Info(context.Background(), fmt.Sprintf("Server running on: %s", addr), nil)
+	r.Use(users.AuthMiddleware(s.users))
 
-// 	return http.ListenAndServe(addr, s.handler)
-// }
+	r.Handle("/playground", playground.Handler("racers", GraphEndpoint))
+	r.Handle(GraphEndpoint, handler.NewDefaultServer(graph.NewExecutableSchema(graph.New(s.races))))
+
+	r.Handle("/metrics", promhttp.Handler())
+
+	s.handler = r
+}
+
+func (s *Server) Handler() http.Handler {
+	return s.handler
+}
+
+func (s *Server) Serve() error {
+	addr := net.JoinHostPort("", s.conf.Port)
+
+	s.logger.Info(context.Background(), fmt.Sprintf("Server running on: %s", addr), nil)
+
+	return http.ListenAndServe(addr, s.handler)
+}

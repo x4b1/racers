@@ -24,7 +24,7 @@ WORKDIR /dist
 
 # Copy binary from build to main folder
 RUN cp /build/main .
-RUN cp -al /build/racers/storage/postgres/migrations ./migrations
+RUN cp -al /build/internal/storage/postgres/migrations ./migrations
 
 ############################
 # STEP 2 build a small image
@@ -32,7 +32,7 @@ RUN cp -al /build/racers/storage/postgres/migrations ./migrations
 FROM scratch
 
 COPY --from=builder /build/main /
-COPY --from=builder /build/racers/storage/postgres/migrations /migrations
+COPY --from=builder /build/internal/storage/postgres/migrations /migrations
 
 # Command to run the executable
 ENTRYPOINT ["/main"]
