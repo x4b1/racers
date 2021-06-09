@@ -112,12 +112,12 @@ func (s createRaceSuite) TestCreateRace_Success() {
 	result, err := s.service.Create(context.Background(), s.req)
 	s.NoError(err)
 
-	expected := racers.NewRace(
-		racers.RaceID(id.MustParse(s.req.ID)),
-		racers.RaceName(s.req.Name),
-		racers.RaceDate(s.req.Date),
-		racers.UserID{},
-	)
+	expected := racers.Race{
+		ID:    racers.RaceID(id.MustParse(s.req.ID)),
+		Name:  racers.RaceName(s.req.Name),
+		Date:  racers.RaceDate(s.req.Date),
+		Owner: racers.UserID{},
+	}
 	s.Equal(expected, result)
 
 	s.Len(s.races.ExistsCalls(), 1)
@@ -196,12 +196,12 @@ func (s *joinRaceSuite) SetupTest() {
 	s.users = &UsersGetterMock{}
 	s.eventBus = &EventBusMock{}
 
-	s.dummyRace = racers.NewRace(
-		racers.RaceID(id.Generate()),
-		racers.RaceName("Black Mamba Race"),
-		racers.RaceDate(time.Now().AddDate(0, 1, 0)),
-		racers.UserID(id.Generate()),
-	)
+	s.dummyRace = racers.Race{
+		ID:    racers.RaceID(id.Generate()),
+		Name:  racers.RaceName("Black Mamba Race"),
+		Date:  racers.RaceDate(time.Now().AddDate(0, 1, 0)),
+		Owner: racers.UserID(id.Generate()),
+	}
 
 	s.dummyUser = racers.User{ID: racers.UserID(id.Generate())}
 
@@ -349,7 +349,12 @@ func (s listRacesSuite) TestListRaces_Success() {
 	owner := racers.UserID(id.Generate())
 	races := make([]racers.Race, 5)
 	for i := range races {
-		races[i] = racers.NewRace(racers.RaceID(id.Generate()), racers.RaceName("race-name"), racers.RaceDate{}, owner)
+		races[i] = racers.Race{
+			ID:    racers.RaceID(id.Generate()),
+			Name:  racers.RaceName("race-name"),
+			Date:  racers.RaceDate{},
+			Owner: owner,
+		}
 	}
 
 	s.races.AllFunc = func(ctx context.Context) ([]racers.Race, error) {

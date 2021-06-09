@@ -13,7 +13,7 @@ import (
 	"github.com/xabi93/racers/internal/id"
 	"github.com/xabi93/racers/internal/instrumentation/log"
 	"github.com/xabi93/racers/internal/server"
-	"github.com/xabi93/racers/internal/server/graph"
+	"github.com/xabi93/racers/internal/server/graph/models"
 	"github.com/xabi93/racers/internal/storage/postgres"
 	"github.com/xabi93/racers/internal/storage/postgres/test"
 	"github.com/xabi93/racers/internal/users"
@@ -164,7 +164,7 @@ type createRaceResult struct {
 	}
 }
 
-func createRace(c *client.Client, req graph.Race) createRaceResult {
+func createRace(c *client.Client, req models.Race) createRaceResult {
 	const mutation = `mutation($id: ID!, $name: String!, $date: DateTime!) {
 		createRace(race:{id: $id, name: $name, date: $date}){
 			__typename

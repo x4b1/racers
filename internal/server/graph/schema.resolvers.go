@@ -8,10 +8,11 @@ import (
 
 	racers "github.com/xabi93/racers/internal"
 	errorsx "github.com/xabi93/racers/internal/errors"
+	"github.com/xabi93/racers/internal/server/graph/models"
 	"github.com/xabi93/racers/internal/service"
 )
 
-func (r *mutationResolver) CreateRace(ctx context.Context, race RaceInput) (CreateRaceResult, error) {
+func (r *mutationResolver) CreateRace(ctx context.Context, race models.RaceInput) (models.CreateRaceResult, error) {
 	result, err := r.racers.Create(ctx, service.CreateRace{
 		ID:   race.ID,
 		Name: race.Name,
@@ -26,45 +27,45 @@ func (r *mutationResolver) CreateRace(ctx context.Context, race RaceInput) (Crea
 	if err != nil {
 		switch {
 		case errorsx.As(err, &invalidID):
-			return InvalidIDError{Message: invalidID.Error()}, nil
+			return models.InvalidIDError{Message: invalidID.Error()}, nil
 		case errorsx.As(err, &invalidName):
-			return InvalidRaceNameError{Message: invalidName.Error()}, nil
+			return models.InvalidRaceNameError{Message: invalidName.Error()}, nil
 		case errorsx.As(err, &invalidDate):
-			return InvalidRaceDateError{Message: invalidDate.Error()}, nil
+			return models.InvalidRaceDateError{Message: invalidDate.Error()}, nil
 		case errorsx.Is(err, service.ErrRaceAlreadyExists):
-			return RaceAlreadyExists{Message: err.Error()}, nil
+			return models.RaceAlreadyExists{Message: err.Error()}, nil
 		}
-		return nil, NewInternalError()
+		return nil, models.NewInternalError()
 	}
 
-	return NewRace(result), err
+	return models.NewRace(result), err
 }
 
-func (r *queryResolver) Race(ctx context.Context, id string) (RaceResult, error) {
+func (r *queryResolver) Race(ctx context.Context, id string) (models.RaceResult, error) {
 	result, err := r.racers.Get(ctx, service.GetRace{ID: id})
 
 	var invalidID racers.InvalidRaceIDError
 	if err != nil {
 		switch {
 		case errorsx.As(err, &invalidID):
-			return InvalidIDError{Message: invalidID.Error()}, nil
+			return models.InvalidIDError{Message: invalidID.Error()}, nil
 		case errorsx.Is(err, service.ErrRaceNotFound):
-			return RaceNotFound{Message: err.Error()}, nil
+			return models.RaceNotFound{Message: err.Error()}, nil
 		}
 
-		return nil, NewInternalError()
+		return nil, models.NewInternalError()
 	}
 
-	return NewRace(result), err
+	return models.NewRace(result), err
 }
 
-func (r *queryResolver) Races(ctx context.Context) (*Races, error) {
+func (r *queryResolver) Races(ctx context.Context) (*models.Races, error) {
 	races, err := r.racers.List(ctx)
-	result := make([]*Race, len(races))
-	for i, r := range races {
-		result[i] = NewRace(r)
+	if err != nil {
+		return nil, models.NewInternalError()
 	}
-	return &Races{Races: result}, err
+
+	return models.NewRaces(races), nil
 }
 
 // Mutation returns MutationResolver implementation.

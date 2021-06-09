@@ -42,7 +42,12 @@ func (s Races) Create(ctx context.Context, r CreateRace) (race racers.Race, err 
 		return racers.Race{}, err
 	}
 
-	race = racers.NewRace(id, name, date, s.users.Current(ctx).ID)
+	race = racers.Race{
+		ID:    id,
+		Name:  name,
+		Date:  date,
+		Owner: s.users.Current(ctx).ID,
+	}
 
 	exists, err := s.races.Exists(ctx, race)
 	if err != nil {

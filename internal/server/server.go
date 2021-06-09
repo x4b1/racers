@@ -8,8 +8,8 @@ import (
 	"net/http"
 
 	"github.com/xabi93/racers/internal/instrumentation/log"
-	instrumentation "github.com/xabi93/racers/internal/instrumentation/metrics"
 	"github.com/xabi93/racers/internal/server/graph"
+	"github.com/xabi93/racers/internal/server/graph/instrumentation"
 	"github.com/xabi93/racers/internal/service"
 	"github.com/xabi93/racers/internal/storage/postgres"
 	"github.com/xabi93/racers/internal/users"
@@ -17,23 +17,18 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const GraphEndpoint = "/graph"
 
 func New(conf Conf, logger log.Logger, db *sql.DB, uProvider users.UsersProvider) (Server, error) {
-	metrics, err := instrumentation.NewMetrics()
-	if err != nil {
-		return Server{}, err
-	}
-
 	s := Server{
-		conf:    conf,
-		logger:  logger,
-		db:      db,
-		metrics: metrics,
-		users:   users.Users{UsersProvider: uProvider},
+		conf:   conf,
+		logger: logger,
+		db:     db,
+		users:  users.Users{UsersProvider: uProvider},
 	}
 
 	if err := s.initService(); err != nil {
@@ -46,11 +41,10 @@ func New(conf Conf, logger log.Logger, db *sql.DB, uProvider users.UsersProvider
 }
 
 type Server struct {
-	conf    Conf
-	logger  log.Logger
-	db      *sql.DB
-	users   users.Users
-	metrics instrumentation.Metrics
+	conf   Conf
+	logger log.Logger
+	db     *sql.DB
+	users  users.Users
 
 	handler http.Handler
 
@@ -77,9 +71,16 @@ func (s *Server) initHandler() {
 	r.Use(users.AuthMiddleware(s.users))
 
 	r.Handle("/playground", playground.Handler("racers", GraphEndpoint))
-	r.Handle(GraphEndpoint, handler.NewDefaultServer(graph.NewExecutableSchema(graph.New(s.races))))
 
-	r.Handle("/metrics", promhttp.Handler())
+	graphServer := handler.NewDefaultServer(graph.NewExecutableSchema(graph.New(s.races)))
+
+	promRegistry := prometheus.NewRegistry()
+	graphServer.Use(instrumentation.NewPrometheus(promRegistry, "racers"))
+	r.Handle(GraphEndpoint, graphServer)
+
+	r.Handle("/metrics", promhttp.InstrumentMetricHandler(
+		promRegistry, promhttp.HandlerFor(promRegistry, promhttp.HandlerOpts{}),
+	))
 
 	s.handler = r
 }

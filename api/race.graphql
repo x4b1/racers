@@ -8,3 +8,20 @@ type Race {
 type Races {
     races: [Race!]!
 }
+
+
+type RaceNotFound implements Error {
+    message: String!
+}
+
+type InvalidRaceNameError implements Error {
+    message: String!
+}
+
+type InvalidRaceDateError implements Error {
+    message: String!
+}
+
+type RaceAlreadyExists implements Error {
+    message: String!
+}

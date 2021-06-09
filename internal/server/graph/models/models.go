@@ -1,4 +1,4 @@
-package graph
+package models
 
 import (
 	"errors"
@@ -26,6 +26,15 @@ func NewRace(race racers.Race) *Race {
 		Date:           time.Time(race.Date),
 		competitorsIDs: race.Competitors.List(),
 	}
+}
+
+func NewRaces(races []racers.Race) *Races {
+	result := make([]*Race, len(races))
+	for i, r := range races {
+		result[i] = NewRace(r)
+	}
+
+	return &Races{Races: result}
 }
 
 func NewInternalError() error {

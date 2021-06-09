@@ -71,28 +71,6 @@ func NewRaceCompetitors(users ...UserID) RaceCompetitors {
 
 type RaceCompetitors struct{ userList }
 
-type RaceOption func(*Race)
-
-func RaceCompetitorsOpt(c RaceCompetitors) RaceOption {
-	return func(r *Race) {
-		r.Competitors = c
-	}
-}
-
-func NewRace(id RaceID, name RaceName, date RaceDate, owner UserID, opts ...RaceOption) Race {
-	r := Race{
-		ID:    id,
-		Name:  name,
-		Date:  date,
-		Owner: owner,
-	}
-	for _, opt := range opts {
-		opt(&r)
-	}
-
-	return r
-}
-
 type Race struct {
 	ID          RaceID
 	Name        RaceName

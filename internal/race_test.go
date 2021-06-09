@@ -7,7 +7,6 @@ import (
 
 	racers "github.com/xabi93/racers/internal"
 	"github.com/xabi93/racers/internal/id"
-	"github.com/xabi93/racers/internal/users"
 
 	"github.com/stretchr/testify/require"
 )
@@ -83,46 +82,31 @@ func TestRaceCompetitors(t *testing.T) {
 	})
 }
 
-func TestNewRace(t *testing.T) {
-	require := require.New(t)
-
-	competitors := racers.NewRaceCompetitors(
-		racers.UserID(id.Generate()),
-		racers.UserID(id.Generate()),
-	)
-
-	r := racers.NewRace(raceID, raceName, raceDate, users.KilianID, racers.RaceCompetitorsOpt(competitors))
-
-	require.Equal(r.ID, raceID)
-	require.Equal(r.Name, raceName)
-	require.Equal(r.Competitors, competitors)
-}
-
 func TestRace(t *testing.T) {
 	require := require.New(t)
 
 	t.Run(`Given a race with no competitors,
 	When joins one,
 	Then returns no error and generates RaceCompetitorJoined event`, func(t *testing.T) {
-		r := racers.NewRace(
-			raceID,
-			raceName,
-			raceDate,
-			ownerID,
-		)
+		r := racers.Race{
+			ID:    raceID,
+			Name:  raceName,
+			Date:  raceDate,
+			Owner: ownerID,
+		}
 		require.NoError(r.Join(raceCompetitor))
 	})
 
 	t.Run(`Given a race with one competitor,
 	When tries to join the same competitor,
 	Then returns CompetitorInRaceError error`, func(t *testing.T) {
-		r := racers.NewRace(
-			raceID,
-			raceName,
-			raceDate,
-			ownerID,
-			racers.RaceCompetitorsOpt(racers.NewRaceCompetitors(raceCompetitor.ID)),
-		)
+		r := racers.Race{
+			ID:          raceID,
+			Name:        raceName,
+			Date:        raceDate,
+			Owner:       ownerID,
+			Competitors: racers.NewRaceCompetitors(raceCompetitor.ID),
+		}
 
 		err := r.Join(raceCompetitor)
 

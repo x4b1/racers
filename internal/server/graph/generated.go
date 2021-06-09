@@ -16,6 +16,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
+	"github.com/xabi93/racers/internal/server/graph/models"
 )
 
 // region    ************************** generated!.gotpl **************************
@@ -58,7 +59,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateRace func(childComplexity int, race RaceInput) int
+		CreateRace func(childComplexity int, race models.RaceInput) int
 	}
 
 	Query struct {
@@ -93,11 +94,11 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	CreateRace(ctx context.Context, race RaceInput) (CreateRaceResult, error)
+	CreateRace(ctx context.Context, race models.RaceInput) (models.CreateRaceResult, error)
 }
 type QueryResolver interface {
-	Race(ctx context.Context, id string) (RaceResult, error)
-	Races(ctx context.Context) (*Races, error)
+	Race(ctx context.Context, id string) (models.RaceResult, error)
+	Races(ctx context.Context) (*models.Races, error)
 }
 
 type executableSchema struct {
@@ -146,7 +147,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateRace(childComplexity, args["race"].(RaceInput)), true
+		return e.complexity.Mutation.CreateRace(childComplexity, args["race"].(models.RaceInput)), true
 
 	case "Query.race":
 		if e.complexity.Query.Race == nil {
@@ -380,10 +381,10 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_createRace_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 RaceInput
+	var arg0 models.RaceInput
 	if tmp, ok := rawArgs["race"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("race"))
-		arg0, err = ec.unmarshalNRaceInput2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐRaceInput(ctx, tmp)
+		arg0, err = ec.unmarshalNRaceInput2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐRaceInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -536,7 +537,7 @@ func (ec *executionContext) _fieldMiddleware(ctx context.Context, obj interface{
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _InvalidIDError_message(ctx context.Context, field graphql.CollectedField, obj *InvalidIDError) (ret graphql.Marshaler) {
+func (ec *executionContext) _InvalidIDError_message(ctx context.Context, field graphql.CollectedField, obj *models.InvalidIDError) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -568,7 +569,7 @@ func (ec *executionContext) _InvalidIDError_message(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _InvalidRaceDateError_message(ctx context.Context, field graphql.CollectedField, obj *InvalidRaceDateError) (ret graphql.Marshaler) {
+func (ec *executionContext) _InvalidRaceDateError_message(ctx context.Context, field graphql.CollectedField, obj *models.InvalidRaceDateError) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -600,7 +601,7 @@ func (ec *executionContext) _InvalidRaceDateError_message(ctx context.Context, f
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _InvalidRaceNameError_message(ctx context.Context, field graphql.CollectedField, obj *InvalidRaceNameError) (ret graphql.Marshaler) {
+func (ec *executionContext) _InvalidRaceNameError_message(ctx context.Context, field graphql.CollectedField, obj *models.InvalidRaceNameError) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -657,7 +658,7 @@ func (ec *executionContext) _Mutation_createRace(ctx context.Context, field grap
 	fc.Args = args
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateRace(rctx, args["race"].(RaceInput))
+		return ec.resolvers.Mutation().CreateRace(rctx, args["race"].(models.RaceInput))
 	})
 
 	if resTmp == nil {
@@ -666,9 +667,9 @@ func (ec *executionContext) _Mutation_createRace(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(CreateRaceResult)
+	res := resTmp.(models.CreateRaceResult)
 	fc.Result = res
-	return ec.marshalNCreateRaceResult2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐCreateRaceResult(ctx, field.Selections, res)
+	return ec.marshalNCreateRaceResult2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐCreateRaceResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_race(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -705,9 +706,9 @@ func (ec *executionContext) _Query_race(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(RaceResult)
+	res := resTmp.(models.RaceResult)
 	fc.Result = res
-	return ec.marshalNRaceResult2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐRaceResult(ctx, field.Selections, res)
+	return ec.marshalNRaceResult2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐRaceResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_races(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -737,9 +738,9 @@ func (ec *executionContext) _Query_races(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Races)
+	res := resTmp.(*models.Races)
 	fc.Result = res
-	return ec.marshalNRaces2ᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐRaces(ctx, field.Selections, res)
+	return ec.marshalNRaces2ᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐRaces(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -807,7 +808,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Race_id(ctx context.Context, field graphql.CollectedField, obj *Race) (ret graphql.Marshaler) {
+func (ec *executionContext) _Race_id(ctx context.Context, field graphql.CollectedField, obj *models.Race) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -839,7 +840,7 @@ func (ec *executionContext) _Race_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Race_name(ctx context.Context, field graphql.CollectedField, obj *Race) (ret graphql.Marshaler) {
+func (ec *executionContext) _Race_name(ctx context.Context, field graphql.CollectedField, obj *models.Race) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -871,7 +872,7 @@ func (ec *executionContext) _Race_name(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Race_date(ctx context.Context, field graphql.CollectedField, obj *Race) (ret graphql.Marshaler) {
+func (ec *executionContext) _Race_date(ctx context.Context, field graphql.CollectedField, obj *models.Race) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -903,7 +904,7 @@ func (ec *executionContext) _Race_date(ctx context.Context, field graphql.Collec
 	return ec.marshalNDateTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Race_competitors(ctx context.Context, field graphql.CollectedField, obj *Race) (ret graphql.Marshaler) {
+func (ec *executionContext) _Race_competitors(ctx context.Context, field graphql.CollectedField, obj *models.Race) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -930,12 +931,12 @@ func (ec *executionContext) _Race_competitors(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*User)
+	res := resTmp.([]*models.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐUserᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _RaceAlreadyExists_message(ctx context.Context, field graphql.CollectedField, obj *RaceAlreadyExists) (ret graphql.Marshaler) {
+func (ec *executionContext) _RaceAlreadyExists_message(ctx context.Context, field graphql.CollectedField, obj *models.RaceAlreadyExists) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -967,7 +968,7 @@ func (ec *executionContext) _RaceAlreadyExists_message(ctx context.Context, fiel
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _RaceNotFound_message(ctx context.Context, field graphql.CollectedField, obj *RaceNotFound) (ret graphql.Marshaler) {
+func (ec *executionContext) _RaceNotFound_message(ctx context.Context, field graphql.CollectedField, obj *models.RaceNotFound) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -999,7 +1000,7 @@ func (ec *executionContext) _RaceNotFound_message(ctx context.Context, field gra
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Races_races(ctx context.Context, field graphql.CollectedField, obj *Races) (ret graphql.Marshaler) {
+func (ec *executionContext) _Races_races(ctx context.Context, field graphql.CollectedField, obj *models.Races) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1026,12 +1027,12 @@ func (ec *executionContext) _Races_races(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Race)
+	res := resTmp.([]*models.Race)
 	fc.Result = res
-	return ec.marshalNRace2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐRaceᚄ(ctx, field.Selections, res)
+	return ec.marshalNRace2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐRaceᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *models.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1063,7 +1064,7 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_name(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_name(ctx context.Context, field graphql.CollectedField, obj *models.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1095,7 +1096,7 @@ func (ec *executionContext) _User_name(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_races(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_races(ctx context.Context, field graphql.CollectedField, obj *models.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1122,9 +1123,9 @@ func (ec *executionContext) _User_races(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Race)
+	res := resTmp.([]*models.Race)
 	fc.Result = res
-	return ec.marshalNRace2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐRaceᚄ(ctx, field.Selections, res)
+	return ec.marshalNRace2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐRaceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -2118,8 +2119,8 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputRaceInput(ctx context.Context, obj interface{}) (RaceInput, error) {
-	var it RaceInput
+func (ec *executionContext) unmarshalInputRaceInput(ctx context.Context, obj interface{}) (models.RaceInput, error) {
+	var it models.RaceInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -2158,41 +2159,41 @@ func (ec *executionContext) unmarshalInputRaceInput(ctx context.Context, obj int
 
 // region    ************************** interface.gotpl ***************************
 
-func (ec *executionContext) _CreateRaceResult(ctx context.Context, sel ast.SelectionSet, obj CreateRaceResult) graphql.Marshaler {
+func (ec *executionContext) _CreateRaceResult(ctx context.Context, sel ast.SelectionSet, obj models.CreateRaceResult) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case Race:
+	case models.Race:
 		return ec._Race(ctx, sel, &obj)
-	case *Race:
+	case *models.Race:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._Race(ctx, sel, obj)
-	case InvalidIDError:
+	case models.InvalidIDError:
 		return ec._InvalidIDError(ctx, sel, &obj)
-	case *InvalidIDError:
+	case *models.InvalidIDError:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._InvalidIDError(ctx, sel, obj)
-	case InvalidRaceNameError:
+	case models.InvalidRaceNameError:
 		return ec._InvalidRaceNameError(ctx, sel, &obj)
-	case *InvalidRaceNameError:
+	case *models.InvalidRaceNameError:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._InvalidRaceNameError(ctx, sel, obj)
-	case InvalidRaceDateError:
+	case models.InvalidRaceDateError:
 		return ec._InvalidRaceDateError(ctx, sel, &obj)
-	case *InvalidRaceDateError:
+	case *models.InvalidRaceDateError:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._InvalidRaceDateError(ctx, sel, obj)
-	case RaceAlreadyExists:
+	case models.RaceAlreadyExists:
 		return ec._RaceAlreadyExists(ctx, sel, &obj)
-	case *RaceAlreadyExists:
+	case *models.RaceAlreadyExists:
 		if obj == nil {
 			return graphql.Null
 		}
@@ -2202,41 +2203,41 @@ func (ec *executionContext) _CreateRaceResult(ctx context.Context, sel ast.Selec
 	}
 }
 
-func (ec *executionContext) _Error(ctx context.Context, sel ast.SelectionSet, obj Error) graphql.Marshaler {
+func (ec *executionContext) _Error(ctx context.Context, sel ast.SelectionSet, obj models.Error) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case RaceNotFound:
+	case models.RaceNotFound:
 		return ec._RaceNotFound(ctx, sel, &obj)
-	case *RaceNotFound:
+	case *models.RaceNotFound:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._RaceNotFound(ctx, sel, obj)
-	case InvalidIDError:
+	case models.InvalidIDError:
 		return ec._InvalidIDError(ctx, sel, &obj)
-	case *InvalidIDError:
+	case *models.InvalidIDError:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._InvalidIDError(ctx, sel, obj)
-	case InvalidRaceNameError:
+	case models.InvalidRaceNameError:
 		return ec._InvalidRaceNameError(ctx, sel, &obj)
-	case *InvalidRaceNameError:
+	case *models.InvalidRaceNameError:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._InvalidRaceNameError(ctx, sel, obj)
-	case InvalidRaceDateError:
+	case models.InvalidRaceDateError:
 		return ec._InvalidRaceDateError(ctx, sel, &obj)
-	case *InvalidRaceDateError:
+	case *models.InvalidRaceDateError:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._InvalidRaceDateError(ctx, sel, obj)
-	case RaceAlreadyExists:
+	case models.RaceAlreadyExists:
 		return ec._RaceAlreadyExists(ctx, sel, &obj)
-	case *RaceAlreadyExists:
+	case *models.RaceAlreadyExists:
 		if obj == nil {
 			return graphql.Null
 		}
@@ -2246,27 +2247,27 @@ func (ec *executionContext) _Error(ctx context.Context, sel ast.SelectionSet, ob
 	}
 }
 
-func (ec *executionContext) _RaceResult(ctx context.Context, sel ast.SelectionSet, obj RaceResult) graphql.Marshaler {
+func (ec *executionContext) _RaceResult(ctx context.Context, sel ast.SelectionSet, obj models.RaceResult) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case Race:
+	case models.Race:
 		return ec._Race(ctx, sel, &obj)
-	case *Race:
+	case *models.Race:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._Race(ctx, sel, obj)
-	case InvalidIDError:
+	case models.InvalidIDError:
 		return ec._InvalidIDError(ctx, sel, &obj)
-	case *InvalidIDError:
+	case *models.InvalidIDError:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._InvalidIDError(ctx, sel, obj)
-	case RaceNotFound:
+	case models.RaceNotFound:
 		return ec._RaceNotFound(ctx, sel, &obj)
-	case *RaceNotFound:
+	case *models.RaceNotFound:
 		if obj == nil {
 			return graphql.Null
 		}
@@ -2282,7 +2283,7 @@ func (ec *executionContext) _RaceResult(ctx context.Context, sel ast.SelectionSe
 
 var invalidIDErrorImplementors = []string{"InvalidIDError", "RaceResult", "CreateRaceResult", "Error"}
 
-func (ec *executionContext) _InvalidIDError(ctx context.Context, sel ast.SelectionSet, obj *InvalidIDError) graphql.Marshaler {
+func (ec *executionContext) _InvalidIDError(ctx context.Context, sel ast.SelectionSet, obj *models.InvalidIDError) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, invalidIDErrorImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -2309,7 +2310,7 @@ func (ec *executionContext) _InvalidIDError(ctx context.Context, sel ast.Selecti
 
 var invalidRaceDateErrorImplementors = []string{"InvalidRaceDateError", "CreateRaceResult", "Error"}
 
-func (ec *executionContext) _InvalidRaceDateError(ctx context.Context, sel ast.SelectionSet, obj *InvalidRaceDateError) graphql.Marshaler {
+func (ec *executionContext) _InvalidRaceDateError(ctx context.Context, sel ast.SelectionSet, obj *models.InvalidRaceDateError) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, invalidRaceDateErrorImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -2336,7 +2337,7 @@ func (ec *executionContext) _InvalidRaceDateError(ctx context.Context, sel ast.S
 
 var invalidRaceNameErrorImplementors = []string{"InvalidRaceNameError", "CreateRaceResult", "Error"}
 
-func (ec *executionContext) _InvalidRaceNameError(ctx context.Context, sel ast.SelectionSet, obj *InvalidRaceNameError) graphql.Marshaler {
+func (ec *executionContext) _InvalidRaceNameError(ctx context.Context, sel ast.SelectionSet, obj *models.InvalidRaceNameError) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, invalidRaceNameErrorImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -2452,7 +2453,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 
 var raceImplementors = []string{"Race", "RaceResult", "CreateRaceResult"}
 
-func (ec *executionContext) _Race(ctx context.Context, sel ast.SelectionSet, obj *Race) graphql.Marshaler {
+func (ec *executionContext) _Race(ctx context.Context, sel ast.SelectionSet, obj *models.Race) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, raceImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -2494,7 +2495,7 @@ func (ec *executionContext) _Race(ctx context.Context, sel ast.SelectionSet, obj
 
 var raceAlreadyExistsImplementors = []string{"RaceAlreadyExists", "CreateRaceResult", "Error"}
 
-func (ec *executionContext) _RaceAlreadyExists(ctx context.Context, sel ast.SelectionSet, obj *RaceAlreadyExists) graphql.Marshaler {
+func (ec *executionContext) _RaceAlreadyExists(ctx context.Context, sel ast.SelectionSet, obj *models.RaceAlreadyExists) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, raceAlreadyExistsImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -2521,7 +2522,7 @@ func (ec *executionContext) _RaceAlreadyExists(ctx context.Context, sel ast.Sele
 
 var raceNotFoundImplementors = []string{"RaceNotFound", "RaceResult", "Error"}
 
-func (ec *executionContext) _RaceNotFound(ctx context.Context, sel ast.SelectionSet, obj *RaceNotFound) graphql.Marshaler {
+func (ec *executionContext) _RaceNotFound(ctx context.Context, sel ast.SelectionSet, obj *models.RaceNotFound) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, raceNotFoundImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -2548,7 +2549,7 @@ func (ec *executionContext) _RaceNotFound(ctx context.Context, sel ast.Selection
 
 var racesImplementors = []string{"Races"}
 
-func (ec *executionContext) _Races(ctx context.Context, sel ast.SelectionSet, obj *Races) graphql.Marshaler {
+func (ec *executionContext) _Races(ctx context.Context, sel ast.SelectionSet, obj *models.Races) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, racesImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -2575,7 +2576,7 @@ func (ec *executionContext) _Races(ctx context.Context, sel ast.SelectionSet, ob
 
 var userImplementors = []string{"User"}
 
-func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *User) graphql.Marshaler {
+func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *models.User) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -2870,7 +2871,7 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNCreateRaceResult2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐCreateRaceResult(ctx context.Context, sel ast.SelectionSet, v CreateRaceResult) graphql.Marshaler {
+func (ec *executionContext) marshalNCreateRaceResult2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐCreateRaceResult(ctx context.Context, sel ast.SelectionSet, v models.CreateRaceResult) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -2910,7 +2911,7 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) marshalNRace2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐRaceᚄ(ctx context.Context, sel ast.SelectionSet, v []*Race) graphql.Marshaler {
+func (ec *executionContext) marshalNRace2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐRaceᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Race) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -2934,7 +2935,7 @@ func (ec *executionContext) marshalNRace2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNRace2ᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐRace(ctx, sel, v[i])
+			ret[i] = ec.marshalNRace2ᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐRace(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2947,7 +2948,7 @@ func (ec *executionContext) marshalNRace2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNRace2ᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐRace(ctx context.Context, sel ast.SelectionSet, v *Race) graphql.Marshaler {
+func (ec *executionContext) marshalNRace2ᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐRace(ctx context.Context, sel ast.SelectionSet, v *models.Race) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -2957,12 +2958,12 @@ func (ec *executionContext) marshalNRace2ᚖgithubᚗcomᚋxabi93ᚋracersᚋint
 	return ec._Race(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNRaceInput2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐRaceInput(ctx context.Context, v interface{}) (RaceInput, error) {
+func (ec *executionContext) unmarshalNRaceInput2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐRaceInput(ctx context.Context, v interface{}) (models.RaceInput, error) {
 	res, err := ec.unmarshalInputRaceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNRaceResult2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐRaceResult(ctx context.Context, sel ast.SelectionSet, v RaceResult) graphql.Marshaler {
+func (ec *executionContext) marshalNRaceResult2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐRaceResult(ctx context.Context, sel ast.SelectionSet, v models.RaceResult) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -2972,11 +2973,11 @@ func (ec *executionContext) marshalNRaceResult2githubᚗcomᚋxabi93ᚋracersᚋ
 	return ec._RaceResult(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNRaces2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐRaces(ctx context.Context, sel ast.SelectionSet, v Races) graphql.Marshaler {
+func (ec *executionContext) marshalNRaces2githubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐRaces(ctx context.Context, sel ast.SelectionSet, v models.Races) graphql.Marshaler {
 	return ec._Races(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNRaces2ᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐRaces(ctx context.Context, sel ast.SelectionSet, v *Races) graphql.Marshaler {
+func (ec *executionContext) marshalNRaces2ᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐRaces(ctx context.Context, sel ast.SelectionSet, v *models.Races) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3001,7 +3002,7 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3025,7 +3026,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3038,7 +3039,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋxabi93ᚋracersᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚐUser(ctx context.Context, sel ast.SelectionSet, v *User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋxabi93ᚋracersᚋinternalᚋserverᚋgraphᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")

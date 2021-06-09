@@ -4,10 +4,11 @@ schema:
 resolver:
   layout: follow-schema
   dir: .
-
+model:
+  filename: models/generated.go
 
 autobind:
-  - github.com/xabi93/racers/internal/server/graph
+  - github.com/xabi93/racers/internal/server/graph/models
 
 models:
   DateTime: # The GraphQL type DateTime
