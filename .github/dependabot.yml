@@ -8,3 +8,7 @@ updates:
   directory: /build
   schedule:
     interval: weekly
+- package-ecosystem: ""
+  directory: /github
+  schedule:
+    interval: weekly
