@@ -1,10 +1,10 @@
 version: 2
 updates:
-- ecosystem: gomod
+- package-ecosystem: gomod
   directory: /
   schedule:
     interval: weekly
-- ecosystem: docker
+- package-ecosystem: docker
   directory: /build
   schedule:
     interval: weekly
